@@ -1,4 +1,65 @@
-                                 Apache License
+---
+# LICENSE
+
+## Apache License 2.0 – for Non-Commercial Use Only
+
+This software is licensed under the Apache License 2.0 with a Non-Commercial Use restriction.
+
+You are free to use, modify, and distribute this software for **non-commercial purposes**, including:
+- Academic research
+- Educational activities
+- Proof-of-concept projects
+
+**Commercial use is not permitted** under this license. This includes, but is not limited to:
+- Embedding this software in a paid product
+- Deploying it in enterprise environments
+- Offering it as a service
+
+To obtain a commercial license, please contact: [your-email@example.com or https://yourdomain.com]
+
+Full license text: https://www.apache.org/licenses/LICENSE-2.0
+
+---
+# README.md (excerpt)
+
+## 📜 Licensing
+This project is available under an open non-commercial license (Apache 2.0 variant). 
+
+✅ **Allowed:** Research, education, academic proof-of-concepts  
+🚫 **Not allowed:** Commercial use, enterprise deployment, monetised platforms
+
+For commercial licensing, email [your-email@example.com] or visit [https://yourdomain.com]
+
+---
+# CONTRIBUTING.md
+
+## Contributing to the RAI Tracker
+
+Thank you for considering a contribution! By submitting code, documentation, or ideas to this repository, you agree to the following:
+
+- Your contributions are licensed under the same open non-commercial license
+- They may also be included in commercial versions licensed separately by [Your Company Name]
+- You assert that your contributions are original or appropriately attributed
+
+---
+# LICENSE-COMMERCIAL.md (optional placeholder)
+
+## Commercial License for RAI Tracker
+
+To use the RAI Tracker in a commercial product, SaaS offering, or enterprise setting, you must obtain a commercial license.
+
+Please contact: [your-email@example.com] or visit [https://yourdomain.com]
+
+Licenses are tailored to the type of usage:
+- Internal enterprise use
+- OEM/white-label integration
+- Paid SaaS platforms
+
+Pricing and support tiers available upon request.
+
+
+
+Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
 
