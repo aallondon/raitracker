@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAI Tracker Dashboard - AWS QuickSight Design</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+        
+        .dashboard-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .header-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+        }
+        
+        .header-stat {
+            text-align: center;
+            padding: 15px 25px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-stat .value {
+            font-size: 2em;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .header-stat .label {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .rai-widget {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .rai-widget::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--widget-color, #3498db);
+        }
+        
+        .rai-widget:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        }
+        
+        .widget-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .widget-title {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .widget-icon {
+            font-size: 1.2em;
+        }
+        
+        .widget-score {
+            font-size: 2.2em;
+            font-weight: bold;
+            color: var(--widget-color, #3498db);
+        }
+        
+        .progress-container {
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .progress-circle {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .progress-ring {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+        
+        .progress-ring-bg {
+            fill: none;
+            stroke: #ecf0f1;
+            stroke-width: 8;
+        }
+        
+        .progress-ring-fill {
+            fill: none;
+            stroke: var(--widget-color, #3498db);
+            stroke-width: 8;
+            stroke-linecap: round;
+            stroke-dasharray: 283;
+            stroke-dashoffset: var(--progress-offset, 150);
+            transition: stroke-dashoffset 0.5s ease;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+        
+        .progress-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: var(--widget-color, #3498db);
+        }
+        
+        .progress-label {
+            font-size: 0.8em;
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .metric-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        .metric-item:hover {
+            background: #e9ecef;
+            transform: scale(1.02);
+        }
+        
+        .metric-value {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: var(--widget-color, #3498db);
+        }
+        
+        .metric-label {
+            font-size: 0.85em;
+            color: #6c757d;
+            margin-top: 3px;
+        }
+        
+        .expand-btn {
+            background: var(--widget-color, #3498db);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+        
+        .expand-btn:hover {
+            background: var(--widget-color-dark, #2980b9);
+            transform: scale(1.05);
+        }
+        
+        .trend-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9em;
+        }
+        
+        .trend-up {
+            color: #27ae60;
+        }
+        
+        .trend-down {
+            color: #e74c3c;
+        }
+        
+        .trend-stable {
+            color: #f39c12;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        .status-good {
+            background: #27ae60;
+        }
+        
+        .status-warning {
+            background: #f39c12;
+        }
+        
+        .status-critical {
+            background: #e74c3c;
+        }
+        
+        .expanded-metrics {
+            display: none;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #ecf0f1;
+        }
+        
+        .expanded-metrics.active {
+            display: block;
+        }
+        
+        .expanded-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+        
+        .summary-dashboard {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+        }
+        
+        .summary-title {
+            font-size: 1.5em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #2c3e50;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .summary-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .summary-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--item-color, #3498db);
+        }
+        
+        .summary-label {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        /* Widget-specific colors */
+        .widget-bias { --widget-color: #e74c3c; --widget-color-dark: #c0392b; }
+        .widget-drift { --widget-color: #9b59b6; --widget-color-dark: #8e44ad; }
+        .widget-environment { --widget-color: #27ae60; --widget-color-dark: #229954; }
+        .widget-explainability { --widget-color: #f39c12; --widget-color-dark: #e67e22; }
+        .widget-interaction { --widget-color: #3498db; --widget-color-dark: #2980b9; }
+        .widget-performance { --widget-color: #1abc9c; --widget-color-dark: #16a085; }
+        .widget-monitoring { --widget-color: #34495e; --widget-color-dark: #2c3e50; }
+        .widget-security { --widget-color: #e67e22; --widget-color-dark: #d35400; }
+        
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header-stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .alert-banner {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-banner.critical {
+            background: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .alert-icon {
+            font-size: 1.2em;
+        }
+        
+        .filter-controls {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .filter-label {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header Section -->
+        <div class="header">
+            <h1>Responsible AI Tracker Dashboard</h1>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <span class="value">87.3</span>
+                    <span class="label">Overall RAI Score</span>
+                </div>
+                <div class="header-stat">
+                    <span class="value">12</span>
+                    <span class="label">Active Models</span>
+                </div>
+                <div class="header-stat">
+                    <span class="value">3</span>
+                    <span class="label">Critical Alerts</span>
+                </div>
+                <div class="header-stat">
+                    <span class="value">24h</span>
+                    <span class="label">Last Update</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Banner -->
+        <div class="alert-banner critical">
+            <span class="alert-icon">⚠️</span>
+            <span><strong>Critical Alert:</strong> Bias detected in Hiring Model v2.1 - Statistical Parity below threshold (0.67)</span>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="filter-controls">
+            <div class="filter-row">
+                <div class="filter-item">
+                    <label class="filter-label">Time Range</label>
+                    <select class="filter-select">
+                        <option>Last 24 Hours</option>
+                        <option>Last 7 Days</option>
+                        <option>Last 30 Days</option>
+                        <option>Custom Range</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label class="filter-label">Model</label>
+                    <select class="filter-select">
+                        <option>All Models</option>
+                        <option>Hiring Model v2.1</option>
+                        <option>Sentiment Analysis v1.3</option>
+                        <option>Fraud Detection v3.0</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label class="filter-label">Environment</label>
+                    <select class="filter-select">
+                        <option>Production</option>
+                        <option>Staging</option>
+                        <option>Development</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label class="filter-label">Region</label>
+                    <select class="filter-select">
+                        <option>All Regions</option>
+                        <option>US-East-1</option>
+                        <option>EU-West-1</option>
+                        <option>AP-Southeast-1</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- RAI Widgets Grid -->
+        <div class="dashboard-grid">
+            <!-- Bias & Fairness Widget -->
+            <div class="rai-widget widget-bias">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        <span class="widget-icon">⚖️</span>
+                        Bias & Fairness
+                        <span class="status-indicator status-critical"></span>
+                    </div>
+                    <div class="widget-score">67.2</div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-circle">
+                        <svg class="progress-ring" viewBox="0 0 100 100">
+                            <circle class="progress-ring-bg" cx="50" cy="50" r="45"></circle>
+                            <circle class="progress-ring-fill" cx="50" cy="50" r="45" style="--progress-offset: 93;"></circle>
+                        </svg>
+                        <div class="progress-text">
+                            <div class="progress-value">67%</div>
+                            <div class="progress-label">Target: 85%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value">0.67</div>
+                        <div class="metric-label">Statistical Parity</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">0.82</div>
+                        <div class="metric-label">Equal Opportunity</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">0.71</div>
+                        <div class="metric-label">Disparate Impact</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">0.75</div>
+                        <div class="metric-label">Demographic Parity</div>
+                    </div>
+                </div>
+                
+                <div class="trend-indicator trend-down">
+                    <span>↓</span>
+                    <span>-3.2% vs last week</span>
+                </div>
+                
+                <button class="expand-btn" onclick="toggleExpand(this)">View All Metrics</button>
+                
+                <div class="expanded-metrics">
+                    <div class="expanded-grid">
+                        <div class="metric-item">
+                            <div class="metric-value">0.68</div>
+                            <div class="metric-label">Predictive Parity</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.12</div>
+                            <div class="metric-label">Avg Odds Difference</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.78</div>
+                            <div class="metric-label">FPR Parity</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.84</div>
+                            <div class="metric-label">Individual Fairness</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.73</div>
+                            <div class="metric-label">Treatment Equality</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.81</div>
+                            <div class="metric-label">Conditional Accuracy</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data & Model Drift Widget -->
+            <div class="rai-widget widget-drift">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        <span class="widget-icon">📊</span>
+                        Data & Model Drift
+                        <span class="status-indicator status-warning"></span>
+                    </div>
+                    <div class="widget-score">78.5</div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-circle">
+                        <svg class="progress-ring" viewBox="0 0 100 100">
+                            <circle class="progress-ring-bg" cx="50" cy="50" r="45"></circle>
+                            <circle class="progress-ring-fill" cx="50" cy="50" r="45" style="--progress-offset: 61;"></circle>
+                        </svg>
+                        <div class="progress-text">
+                            <div class="progress-value">78%</div>
+                            <div class="progress-label">Target: 90%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value">0.12</div>
+                        <div class="metric-label">Population Stability</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">0.08</div>
+                        <div class="metric-label">KL Divergence</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">0.15</div>
+                        <div class="metric-label">Wasserstein Distance</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">0.09</div>
+                        <div class="metric-label">JS Divergence</div>
+                    </div>
+                </div>
+                
+                <div class="trend-indicator trend-stable">
+                    <span>→</span>
+                    <span>Stable vs last week</span>
+                </div>
+                
+                <button class="expand-btn" onclick="toggleExpand(this)">View All Metrics</button>
+                
+                <div class="expanded-metrics">
+                    <div class="expanded-grid">
+                        <div class="metric-item">
+                            <div class="metric-value">0.11</div>
+                            <div class="metric-label">Feature Drift</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.07</div>
+                            <div class="metric-label">Prediction Drift</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.13</div>
+                            <div class="metric-label">Chi-Square Test</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.14</div>
+                            <div class="metric-label">Earth Mover's Distance</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.06</div>
+                            <div class="metric-label">Concept Drift</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.10</div>
+                            <div class="metric-label">Covariate Shift</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Environmental/Cost Widget -->
+            <div class="rai-widget widget-environment">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        <span class="widget-icon">🌱</span>
+                        Environmental / Cost
+                        <span class="status-indicator status-good"></span>
+                    </div>
+                    <div class="widget-score">92.1</div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-circle">
+                        <svg class="progress-ring" viewBox="0 0 100 100">
+                            <circle class="progress-ring-bg" cx="50" cy="50" r="45"></circle>
+                            <circle class="progress-ring-fill" cx="50" cy="50" r="45" style="--progress-offset: 22;"></circle>
+                        </svg>
+                        <div class="progress-text">
+                            <div class="progress-value">92%</div>
+                            <div class="progress-label">Target: 85%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value">2.3kg</div>
+                        <div class="metric-label">CO2 Emissions</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">4.2h</div>
+                        <div class="metric-label">Training Time</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">$0.23</div>
+                        <div class="metric-label">Inference Cost</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">1.8kWh</div>
+                        <div class="metric-label">Energy Consumption</div>
+                    </div>
+                </div>
+                
+                <div class="trend-indicator trend-up">
+                    <span>↑</span>
+                    <span>+5.1% improvement vs last week</span>
+                </div>
+                
+                <button class="expand-btn" onclick="toggleExpand(this)">View All Metrics</button>
+                
+                <div class="expanded-metrics">
+                    <div class="expanded-grid">
+                        <div class="metric-item">
+                            <div class="metric-value">12.5h</div>
+                            <div class="metric-label">GPU Hours Used</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">$1.20</div>
+                            <div class="metric-label">Cost per Epoch</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">85%</div>
+                            <div class="metric-label">Compute Intensity</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">91%</div>
+                            <div class="metric-label">Hardware Utilization</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">$0.05</div>
+                            <div class="metric-label">Idle Resource Cost</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">94%</div>
+                            <div class="metric-label">Batch Efficiency</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Explainability & Transparency Widget -->
+            <div class="rai-widget widget-explainability">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        <span class="widget-icon">🔍</span>
+                        Explainability & Transparency
+                        <span class="status-indicator status-good"></span>
+                    </div>
+                    <div class="widget-score">84.7</div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-circle">
+                        <svg class="progress-ring" viewBox="0 0 100 100">
+                            <circle class="progress-ring-bg" cx="50" cy="50" r="45"></circle>
+                            <circle class="progress-ring-fill" cx="50" cy="50" r="45" style="--progress-offset: 43;"></circle>
+                        </svg>
+                        <div class="progress-text">
+                            <div class="progress-value">85%</div>
+                            <div class="progress-label">Target: 80%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <div class="metric-value">0.87</div>
+                        <div class="metric-label">SHAP Values</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">0.82</div>
+                        <div class="metric-label">LIME Score</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">0.89</div>
+                        <div class="metric-label">Feature Importance</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">0.76</div>
+                        <div class="metric-label">Counterfactuals</div>
+                    </div>
+                </div>
+                
+                <div class="trend-indicator trend-up">
+                    <span>↑</span>
+                    <span>+2.3% vs last week</span>
+                </div>
+                
+                <button class="expand-btn" onclick="toggleExpand(this)">View All Metrics</button>
+                
+                <div class="expanded-metrics">
+                    <div class="expanded-grid">
+                        <div class="metric-item">
+                            <div class="metric-value">0.91</div>
+                            <div class="metric-label">Confidence Score</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.84</div>
+                            <div class="metric-label">Integrated Gradients</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.78</div>
+                            <div class="metric-label">Attention Weights</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.85</div>
+                            <div class="metric-label">Anchors</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.79</div>
+                            <div class="metric-label">Partial Dependence</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">0.88</div>
+                            <div class="metric-label">Global Surrogates</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Human-AI Interaction Widget -->
+            <div class="rai-widget widget-interaction">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        <span class="widget-icon">👥</span>
+                        Human-AI Interaction
+                        <span class="status-indicator status-good"></span>
+                    </div>
+                    <div class="widget-score">88.9</div>
+                </div>
+                
+                <div class="progress-container">
+                    <div class="progress-circle">
+                        <svg class="progress-ring" viewBox="0 0 100 100">
+                            <circle class="progress-ring-bg" cx="50" cy="50" r="45"></circle>
+                            <circle class="progress-ring-fill" cx="50" cy="50" r="45" style="--progress-offset: 31;"></circle>
+                        </svg>
+                        <div class="progress-text">
+                            <div class="progress-value">89%</div>
+                            
